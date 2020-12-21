@@ -8,7 +8,7 @@ class Droite:
     Droite d'équation ax+by+c=0
     """
     def __init__(self,a,b,c):
-        self.isHorizontale,self.isVertivcale=False,False
+        self.isHorizontale,self.isVerticale=False,False
         assert not( a==0 and b==0)
         if a==0: self.isHorizontale=True
         if b==0: self.isVerticale=True 
@@ -38,12 +38,12 @@ class Droite:
             return (-self.b*y-self.c)/self.a
     def droite_normalisée(self):
         """
-        Droite identique à cette Droite avec un coéfficient a=1
+        Droite identique à cette Droite avec un coefficient b=1
         """
-        if self.isHorizontale:
-            return (Droite(0,1,self.c/self.b))
+        if self.isVerticale:
+            return (Droite(1.,0,self.c/self.a))
         else:
-            return (Droite(1.,self.b/self.a,self.c/self.a))
+            return (Droite(self.a/self.b,1.,self.c/self.b))
     def y (self,x):
         """
         Ordonnée y d'un point de la Droite connaissant son abssice x
@@ -70,7 +70,7 @@ class Droite:
         """
         Point projeté du Point p sur cette Droite
         """    
-        return projeté(p,self)
+        return p.projeté(self)
     def affiche(self):
         print ("Droite :",self.a,self.b,self.c)
 
@@ -141,7 +141,7 @@ class Segment():
     def __init__(self,début,extrémité):
         self.début,self.extrémité=début,extrémité
     def norme(self):
-        return distance(self.début,self.extrémité)
+        return distance_points(self.début,self.extrémité)
     def vecteur_directeur(self):
         return self.début.droite_point(self.extrémité).vecteur_directeur()
     def vecteur_orthogonal(self):
@@ -184,8 +184,8 @@ class Cercle():
         """
         Teste si le Point P est à l'intérieur ou sur le bord de ce Cercle
         """
-        return distance(self.centre,p)<=self.rayon
-    def projeté(self,d):
+        return distance_points(self.centre,p)<=self.rayon
+    def projeté_centre(self,d):
         """
         Point projeté du centre de ce Cercle sur la Droite d
         """
@@ -194,12 +194,15 @@ class Cercle():
         """
         Distance de ce Cercle à la Droite d (distance du centre à son Point projeté sur d)
         """
-        return distance(self.centre,self.projeté(d))
+        return distance_points(self.centre,self.projeté_centre(d))
     def isSécante(self,d):
         """
         Teste si la Droite d est sécante à ce Cercle
         """
-        return self.distance_centre(self,d) <= self.rayon
+        return self.distance_centre(d) <= self.rayon
+    def affiche(self):
+        print("Cercle: rayon=",self.rayon," centre= ",end="")
+        self.centre.affiche()
 
 # Fonctions
 def projeté(p,d):
@@ -219,7 +222,7 @@ def symétrique_orthogonal(p,d):
     Le Point symétrique orthogonal du Point P par rapport à la Droite d
     """
     return symétrique_central(projeté(p,d),p)
-def distance (p,q):
+def distance_points (p,q):
     """
     Distance euclidienne entre les deux Points p et q du plan
     """
@@ -256,8 +259,8 @@ p=Point(6,5)  # un Point p
 centre=Point(5,1) # un Point centre de symétrie
 sym_cent=symétrique_central(centre,p) # le symétrique central par rapport au Point centre
 sym_cent.affiche()   
-assert distance(p,centre)==distance(sym_cent,centre) 
-assert distance(p,sym_cent)==2*distance(p,centre)
+assert distance_points(p,centre)==distance_points(sym_cent,centre) 
+assert distance_points(p,sym_cent)==2*distance_points(p,centre)
 assert Segment(p,sym_cent).contient(centre) 
 q=Point(11,-8) # un autre Point q
 delta=q.droite_point(centre) # la droite passant par les Points q et centre
@@ -266,14 +269,18 @@ sym_ortho.affiche()
 h=Segment(p,sym_ortho).milieu()  # le Point h projeté de du Point p sur la Droite deltat
 h.affiche ()
 p.projeté(delta).affiche()   # on le vérifie
-assert distance(p,sym_ortho)==2*distance(h,p) # on vérifie que delat est la médiatice du Segment(p,sym_ortho)
+assert distance_points(p,sym_ortho)==2*distance_points(h,p) # on vérifie que delat est la médiatice du Segment(p,sym_ortho)
 Segment(p,sym_ortho).médiatrice().droite_normalisée().affiche()
 delta.droite_normalisée().affiche()
 assert Cercle(Point(0,0),1.).périmètre()==2.*math.pi
 assert Cercle(Point(0,0),1.).surface()==math.pi
 assert Cercle(Point(0,0),1.).contient(Point(0.5,.5))
 assert Cercle(Point(10,10),1.).contient(Point(10.5,9.7))
-assert Cercle(centre,distance(centre,p)).contient(p)
-assert Cercle(centre,distance(centre,p)).contient(sym_cent)
+assert Cercle(centre,distance_points(centre,p)).contient(p)
+assert Cercle(centre,distance_points(centre,p)).contient(sym_cent)
 
-
+d3=Point(0,0).droite_point(Point(1,1)).droite_normalisée()
+d3.affiche()
+c=Cercle(Point(4,0),3.)
+c.affiche()
+print (c.isSécante(d3))
